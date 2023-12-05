@@ -1,12 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "de8Xj7C0pbOzSE0d/QtEWzcGGGduzKY4MzN4YSS8VVsIdbIBsSh58YTsKlHzkV+Q1az+w8WY8YW2WoR0W9/7Jg==",
+  "dgSpecHash": "lh6ySZq8Y6P6mnXw9YDoQiX0XrIjr4yVKM9o4SyBLsT4aDc6AhvUFMSj1+Z3FCWgyjSglYrhyXhrkxbmVONwUA==",
   "success": true,
   "projectFilePath": "/Users/duyhungphung/Desktop/APTECH/Sem3-Assigment/api/api/api.csproj",
   "expectedPackageFiles": [
     "/Users/duyhungphung/.nuget/packages/azure.core/1.25.0/azure.core.1.25.0.nupkg.sha512",
     "/Users/duyhungphung/.nuget/packages/azure.identity/1.7.0/azure.identity.1.7.0.nupkg.sha512",
+    "/Users/duyhungphung/.nuget/packages/bcrypt.net-core/1.6.0/bcrypt.net-core.1.6.0.nupkg.sha512",
     "/Users/duyhungphung/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
+    "/Users/duyhungphung/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/7.0.14/microsoft.aspnetcore.authentication.jwtbearer.7.0.14.nupkg.sha512",
     "/Users/duyhungphung/.nuget/packages/microsoft.aspnetcore.openapi/7.0.13/microsoft.aspnetcore.openapi.7.0.13.nupkg.sha512",
     "/Users/duyhungphung/.nuget/packages/microsoft.bcl.asyncinterfaces/1.1.1/microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "/Users/duyhungphung/.nuget/packages/microsoft.csharp/4.5.0/microsoft.csharp.4.5.0.nupkg.sha512",

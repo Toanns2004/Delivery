@@ -74,3 +74,5 @@
 /Users/duyhungphung/Desktop/APTECH/Sem3-Assigment/api/api/obj/Debug/net7.0/api.pdb
 /Users/duyhungphung/Desktop/APTECH/Sem3-Assigment/api/api/obj/Debug/net7.0/api.genruntimeconfig.cache
 /Users/duyhungphung/Desktop/APTECH/Sem3-Assigment/api/api/obj/Debug/net7.0/ref/api.dll
+/Users/duyhungphung/Desktop/APTECH/Sem3-Assigment/api/api/bin/Debug/net7.0/BCrypt.Net-Core.dll
+/Users/duyhungphung/Desktop/APTECH/Sem3-Assigment/api/api/bin/Debug/net7.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll

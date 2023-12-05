@@ -1,3 +1,4 @@
+using api.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Context
@@ -8,6 +9,8 @@ namespace api.Context
         {
             
         }
+        
+        public DbSet<User> Users { get; set; }
     }
 }
 
