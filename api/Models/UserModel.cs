@@ -14,7 +14,8 @@ public class UserModel
     [Required(ErrorMessage = "Telephone number is required.")]
     public string telephone { get; set; }
     
-    [Required(ErrorMessage = "Address is required.")]
+    //[Required(ErrorMessage = "Address is required.")]
+    [StringLength(255, MinimumLength = 0, ErrorMessage = "Address should not exceed 255 characters.")]
     public string address { get; set; }
     
     [Required(ErrorMessage = "Password is required.")]

@@ -1,9 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using api.Context;
 using api.DTOs;
 using api.Entities;
 using api.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace api.Controllers
 {
@@ -48,7 +51,6 @@ namespace api.Controllers
                 }
                 catch (Exception e)
                 {
-
                     return BadRequest(e.Message);
                 }
             }
@@ -58,9 +60,41 @@ namespace api.Controllers
         //login and receive a token
 
         [HttpPost("login")]
-        public IActionResult Login(UserModel loginModel)
+        public IActionResult Login(LoginModel loginModel)
         {
-            
+            //compare email
+            var user = dbContext.Users.SingleOrDefault(u => u.email == loginModel.email);
+            if (user != null)
+            {
+                //compare password
+                bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginModel.password, user.password);
+                if (passwordMatch)
+                {
+                    var claims = new[]
+                    {
+                        new Claim(ClaimTypes.Email, user.email),
+                        new Claim("fullname", user.fullname),
+                    };
+                    
+                    //generate jwt token
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+                    var token = new JwtSecurityToken(
+                        issuer: configuration["Jwt: Issuer"],
+                        audience: configuration["Jwt: Audience"],
+                        claims: claims,
+                        expires: DateTime.Now.AddMinutes(30),
+                        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+                    );
+                    return Ok(new
+                        {
+                            token = new JwtSecurityTokenHandler().WriteToken(token),
+                            fullname = user.fullname
+                        }
+                    );
+                }
+            }
+
+            return Unauthorized();
         }
     
     }

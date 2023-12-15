@@ -21,7 +21,10 @@ builder.Services.AddDbContext<api.Context.DBContext>(
 //CORS config
 builder.Services.AddCors(p => p.AddPolicy("CorsConfig", build =>
 {
-    build.WithOrigins("http://localhost:1111").AllowAnyHeader().AllowAnyMethod();
+    build.WithOrigins("http://localhost:1111")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin();
 }));
 
 //JWT
