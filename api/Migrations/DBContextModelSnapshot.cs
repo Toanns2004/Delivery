@@ -152,7 +152,7 @@ namespace api.Migrations
 
                     b.HasIndex("wardId");
 
-                    b.ToTable("ConsigneeAddresses");
+                    b.ToTable("DeliveryAddresses");
                 });
 
             modelBuilder.Entity("api.Entities.District", b =>
@@ -237,7 +237,10 @@ namespace api.Migrations
             modelBuilder.Entity("api.Entities.PostOffice", b =>
                 {
                     b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("address")
                         .IsRequired()
@@ -340,7 +343,7 @@ namespace api.Migrations
 
                     b.HasIndex("wardId");
 
-                    b.ToTable("ShipperAddresses");
+                    b.ToTable("ShippingAddresses");
                 });
 
             modelBuilder.Entity("api.Entities.Status", b =>

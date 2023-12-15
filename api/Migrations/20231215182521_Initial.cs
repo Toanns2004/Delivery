@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace api.Migrations
 {
     /// <inheritdoc />
-    public partial class m : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -193,7 +193,7 @@ namespace api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ConsigneeAddresses",
+                name: "DeliveryAddresses",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -206,15 +206,15 @@ namespace api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ConsigneeAddresses", x => x.id);
+                    table.PrimaryKey("PK_DeliveryAddresses", x => x.id);
                     table.ForeignKey(
-                        name: "FK_ConsigneeAddresses_Users_userId",
+                        name: "FK_DeliveryAddresses_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ConsigneeAddresses_Wards_wardId",
+                        name: "FK_DeliveryAddresses_Wards_wardId",
                         column: x => x.wardId,
                         principalTable: "Wards",
                         principalColumn: "id",
@@ -225,7 +225,8 @@ namespace api.Migrations
                 name: "PostOffices",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     wardId = table.Column<int>(type: "int", nullable: false),
                     postCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     postName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -245,7 +246,7 @@ namespace api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ShipperAddresses",
+                name: "ShippingAddresses",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -258,15 +259,15 @@ namespace api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ShipperAddresses", x => x.id);
+                    table.PrimaryKey("PK_ShippingAddresses", x => x.id);
                     table.ForeignKey(
-                        name: "FK_ShipperAddresses_Users_userId",
+                        name: "FK_ShippingAddresses_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ShipperAddresses_Wards_wardId",
+                        name: "FK_ShippingAddresses_Wards_wardId",
                         column: x => x.wardId,
                         principalTable: "Wards",
                         principalColumn: "id",
@@ -346,13 +347,13 @@ namespace api.Migrations
                 column: "userId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ConsigneeAddresses_userId",
-                table: "ConsigneeAddresses",
+                name: "IX_DeliveryAddresses_userId",
+                table: "DeliveryAddresses",
                 column: "userId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ConsigneeAddresses_wardId",
-                table: "ConsigneeAddresses",
+                name: "IX_DeliveryAddresses_wardId",
+                table: "DeliveryAddresses",
                 column: "wardId");
 
             migrationBuilder.CreateIndex(
@@ -381,13 +382,13 @@ namespace api.Migrations
                 column: "wardId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ShipperAddresses_userId",
-                table: "ShipperAddresses",
+                name: "IX_ShippingAddresses_userId",
+                table: "ShippingAddresses",
                 column: "userId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ShipperAddresses_wardId",
-                table: "ShipperAddresses",
+                name: "IX_ShippingAddresses_wardId",
+                table: "ShippingAddresses",
                 column: "wardId");
 
             migrationBuilder.CreateIndex(
@@ -413,13 +414,13 @@ namespace api.Migrations
                 name: "BillDetails");
 
             migrationBuilder.DropTable(
-                name: "ConsigneeAddresses");
+                name: "DeliveryAddresses");
 
             migrationBuilder.DropTable(
                 name: "Permissions");
 
             migrationBuilder.DropTable(
-                name: "ShipperAddresses");
+                name: "ShippingAddresses");
 
             migrationBuilder.DropTable(
                 name: "Status");

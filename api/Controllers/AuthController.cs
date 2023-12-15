@@ -73,14 +73,17 @@ namespace api.Controllers
                     var claims = new[]
                     {
                         new Claim(ClaimTypes.Email, user.email),
+                        new Claim("id", user.id.ToString()),
                         new Claim("fullname", user.fullname),
+                        new Claim(JwtRegisteredClaimNames.Aud, configuration["Jwt:Audience"]),
+                        new Claim(JwtRegisteredClaimNames.Iss, configuration["Jwt:Issuer"])
                     };
                     
                     //generate jwt token
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
                     var token = new JwtSecurityToken(
-                        issuer: configuration["Jwt: Issuer"],
-                        audience: configuration["Jwt: Audience"],
+                        issuer: configuration["Issuer"],
+                        audience: configuration["Audience"],
                         claims: claims,
                         expires: DateTime.Now.AddMinutes(30),
                         signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
@@ -88,6 +91,7 @@ namespace api.Controllers
                     return Ok(new
                         {
                             token = new JwtSecurityTokenHandler().WriteToken(token),
+                            id = user.id,
                             fullname = user.fullname
                         }
                     );

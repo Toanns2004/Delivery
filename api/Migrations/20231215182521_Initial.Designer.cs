@@ -12,8 +12,8 @@ using api.Context;
 namespace api.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20231215170440_m")]
-    partial class m
+    [Migration("20231215182521_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -155,7 +155,7 @@ namespace api.Migrations
 
                     b.HasIndex("wardId");
 
-                    b.ToTable("ConsigneeAddresses");
+                    b.ToTable("DeliveryAddresses");
                 });
 
             modelBuilder.Entity("api.Entities.District", b =>
@@ -240,7 +240,10 @@ namespace api.Migrations
             modelBuilder.Entity("api.Entities.PostOffice", b =>
                 {
                     b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("address")
                         .IsRequired()
@@ -343,7 +346,7 @@ namespace api.Migrations
 
                     b.HasIndex("wardId");
 
-                    b.ToTable("ShipperAddresses");
+                    b.ToTable("ShippingAddresses");
                 });
 
             modelBuilder.Entity("api.Entities.Status", b =>

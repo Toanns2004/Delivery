@@ -5,8 +5,6 @@ namespace api.Entities;
 
 public class PostOffice
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int id { get; set; }
     
     public int wardId { get; set; }

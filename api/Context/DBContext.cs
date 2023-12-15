@@ -20,9 +20,9 @@ namespace api.Context
         
         public DbSet<PostOffice> PostOffices { get; set; }
         
-        public DbSet<DeliveryAddress> ConsigneeAddresses { get; set; }
+        public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
         
-        public DbSet<ShippingAddress> ShipperAddresses { get; set; }
+        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
         
         public DbSet<Role> Roles { get; set; }
         
