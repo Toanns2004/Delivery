@@ -31,6 +31,22 @@ namespace api.Controllers
                 .ToList();
             return Ok(districts);
         }
+
+
+        [HttpGet("p={id}")]
+        public IActionResult DistrictByProvince(int id)
+        {
+            List<DistrictDTO> districts = dbContext.Districts
+                .Where(dis => dis.province_id == id)
+                .Select(dis => new DistrictDTO()
+                {
+                    id = dis.id,
+                    provinceId = dis.province_id,
+                    name = dis.district_name
+                })
+                .ToList();
+            return Ok(districts);
+        }
     }
 }
 

@@ -1,8 +1,6 @@
-
-
 namespace api.DTOs;
 
-public class ShippingAddressDTO
+public class DeliveryAddressDTO
 {
     public int id { get; set; }
     public string name { get; set; }
@@ -17,5 +15,4 @@ public class ShippingAddressDTO
     public string districtName { get; set; }
     
     public string provinceName { get; set; }
-    
 }

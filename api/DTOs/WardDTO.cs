@@ -6,5 +6,7 @@ public class WardDTO
     
     public int districtId { get; set; }
     
+    public int provinceId { get; set; }
+    
     public string name { get; set; }
 }

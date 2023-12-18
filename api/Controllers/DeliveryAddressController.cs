@@ -4,18 +4,17 @@ using api.Entities;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route("/client/shippingadd")]
-    public class ShippingAddressController: ControllerBase
+    [Route("/client/deliveryadd")]
+    public class DeliveryAddressController: Controller
     {
         private readonly DBContext dbcontext;
 
-        public ShippingAddressController(DBContext context)
+        public DeliveryAddressController(DBContext context)
         {
             dbcontext = context;
         }
@@ -24,9 +23,9 @@ namespace api.Controllers
         [HttpGet("user/{userId}")]
         public IActionResult Index(int userId)
         {
-            List<ShippingAddressDTO> shippingAddresses = dbcontext.ShippingAddresses
+            List<DeliveryAddressDTO> deliveryAddresses = dbcontext.DeliveryAddresses
                 .Where(add => add.userId == userId)
-                .Select(add => new ShippingAddressDTO()
+                .Select(add => new DeliveryAddressDTO()
                 {
                     id = add.id,
                     name = add.name,
@@ -37,7 +36,7 @@ namespace api.Controllers
                     provinceName = add.Ward.District.Province.province_name
                 })
                 .ToList();
-            return Ok(shippingAddresses);
+            return Ok(deliveryAddresses);
         }
         
         
@@ -47,13 +46,13 @@ namespace api.Controllers
         {
             try
             {
-                ShippingAddress detailShippingAddress = dbcontext.ShippingAddresses.Find(addId);
-                if (detailShippingAddress == null)
+                DeliveryAddress detailDeliveryAddress = dbcontext.DeliveryAddresses.Find(addId);
+                if (detailDeliveryAddress == null)
                 {
-                    return NotFound("Shipping Address not found.");
+                    return NotFound("Delivery Address not found.");
                 }
 
-                Ward ward = dbcontext.Wards.Find(detailShippingAddress.wardId);
+                Ward ward = dbcontext.Wards.Find(detailDeliveryAddress.wardId);
                 if (ward == null)
                 {
                     return NotFound("Ward not found.");
@@ -71,13 +70,13 @@ namespace api.Controllers
                     return NotFound("Province not found.");
                 }
 
-                ShippingAddressDTO addDetails = new ShippingAddressDTO
+                DeliveryAddressDTO addDetails = new DeliveryAddressDTO()
                 {
-                    id = detailShippingAddress.id,
-                    name = detailShippingAddress.name,
-                    telephone = detailShippingAddress.telephone,
-                    address = detailShippingAddress.address,
-                    wardId = detailShippingAddress.wardId,
+                    id = detailDeliveryAddress.id,
+                    name = detailDeliveryAddress.name,
+                    telephone = detailDeliveryAddress.telephone,
+                    address = detailDeliveryAddress.address,
+                    wardId = detailDeliveryAddress.wardId,
                     wardName = ward.ward_name,
                     districtName = district.district_name,
                     provinceName = province.province_name
@@ -96,13 +95,13 @@ namespace api.Controllers
         
         //create add
         [HttpPost("create")]
-        public IActionResult Create(ShippingAddressModel newAddModel)
+        public IActionResult Create(DeliveryAdressModel newAddModel)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    ShippingAddress newShippingAddress = new ShippingAddress()
+                    DeliveryAddress newDeliveryAddress = new DeliveryAddress()
                     {
                         name = newAddModel.name,
                         telephone = newAddModel.telephone,
@@ -110,11 +109,11 @@ namespace api.Controllers
                         address = newAddModel.address,
                         wardId = newAddModel.wardId
                     };
-                    dbcontext.Add(newShippingAddress);
+                    dbcontext.Add(newDeliveryAddress);
                     dbcontext.SaveChanges();
-                    return Created("Created", new ShippingAddressDTO()
+                    return Created("Created", new DeliveryAddressDTO()
                     {
-                        name = newShippingAddress.name
+                        name = newDeliveryAddress.name
                     });
                 }
                 catch(Exception e)
@@ -122,32 +121,32 @@ namespace api.Controllers
                     return BadRequest(e.Message);
                 }
             }
-            return BadRequest("Create Sipping Address Error.");
+            return BadRequest("Create Delivery Address Error.");
         }
         
         
         //update add
         [HttpPut("update/{uId}")]
-        public IActionResult Update(ShippingAddressModel updateAddModel, int uId)
+        public IActionResult Update(DeliveryAdressModel updateAddModel, int uId)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    ShippingAddress updateShippingAddress = dbcontext.ShippingAddresses.Find(uId);
-                    if (updateShippingAddress == null)
+                    DeliveryAddress updateDeliveryAddress = dbcontext.DeliveryAddresses.Find(uId);
+                    if (updateDeliveryAddress == null)
                     {
-                        return NotFound("Shipping Address not found.");
+                        return NotFound("Delivery Address not found.");
                     }
 
-                    updateShippingAddress.name = updateAddModel.name;
-                    updateShippingAddress.telephone = updateAddModel.telephone;
-                    updateShippingAddress.userId = updateAddModel.userId;
-                    updateShippingAddress.address = updateAddModel.address;
-                    updateShippingAddress.wardId = updateAddModel.wardId;
+                    updateDeliveryAddress.name = updateAddModel.name;
+                    updateDeliveryAddress.telephone = updateAddModel.telephone;
+                    updateDeliveryAddress.userId = updateAddModel.userId;
+                    updateDeliveryAddress.address = updateAddModel.address;
+                    updateDeliveryAddress.wardId = updateAddModel.wardId;
 
                     dbcontext.SaveChanges();
-                    return Ok("Update Shipping Address Success.");
+                    return Ok("Update Delivery Address Success.");
                 }
                 catch (Exception e)
                 {
@@ -155,7 +154,7 @@ namespace api.Controllers
                 }
             }
 
-            return BadRequest("Update Shipping Address Error");
+            return BadRequest("Update Delivery Address Error");
         }
         
         
@@ -165,12 +164,12 @@ namespace api.Controllers
         {
             try
             {
-                ShippingAddress deleteShippingAddress = dbcontext.ShippingAddresses.Find(delId);
-                if (deleteShippingAddress == null)
+                DeliveryAddress deleteDeliveryAddress = dbcontext.DeliveryAddresses.Find(delId);
+                if (deleteDeliveryAddress == null)
                 {
-                    return NotFound("Shipping Address not found.");
+                    return NotFound("Delivery Address not found.");
                 }
-                dbcontext.Remove(deleteShippingAddress);
+                dbcontext.Remove(deleteDeliveryAddress);
                 dbcontext.SaveChanges();
                 return NoContent();
             }

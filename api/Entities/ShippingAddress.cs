@@ -19,4 +19,5 @@ public class ShippingAddress
     public int wardId { get; set; }
     [ForeignKey("wardId")]
     public Ward Ward { get; set; }
+    
 }
