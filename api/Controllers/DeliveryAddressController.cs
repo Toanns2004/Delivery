@@ -92,6 +92,31 @@ namespace api.Controllers
             return BadRequest("Get Address Details Error.");
         }
         
+        //search add by tel
+        [HttpGet("search")]
+        public IActionResult AddSearch(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return BadRequest("Search key is empty.");
+            }
+
+            List<DeliveryAddressDTO> addresses = dbcontext.DeliveryAddresses
+                .Where(add => add.telephone.Contains(key))
+                .Select(add => new DeliveryAddressDTO()
+                {
+                    id = add.id,
+                    name = add.name,
+                    telephone = add.telephone,
+                    address = add.address,
+                    wardName = add.Ward.ward_name,
+                    districtName = add.Ward.District.district_name,
+                    provinceName = add.Ward.District.Province.province_name
+                })
+                .ToList();
+            return Ok(addresses);
+        }
+        
         
         //create add
         [HttpPost("create")]
@@ -111,9 +136,35 @@ namespace api.Controllers
                     };
                     dbcontext.Add(newDeliveryAddress);
                     dbcontext.SaveChanges();
+                    
+                    Ward ward = dbcontext.Wards.Find(newDeliveryAddress.wardId);
+                    if (ward == null)
+                    {
+                        return NotFound("Ward not found.");
+                    }
+
+                    District district = dbcontext.Districts.Find(ward.district_id);
+                    if (district == null)
+                    {
+                        return NotFound("District not found.");
+                    }
+
+                    Province province = dbcontext.Provinces.Find(district.province_id);
+                    if (province == null)
+                    {
+                        return NotFound("Province not found.");
+                    }
+                    
                     return Created("Created", new DeliveryAddressDTO()
                     {
-                        name = newDeliveryAddress.name
+                        id = newDeliveryAddress.id,
+                        name = newDeliveryAddress.name,
+                        address = newDeliveryAddress.address,
+                        telephone = newDeliveryAddress.telephone,
+                        wardId = newDeliveryAddress.wardId,
+                        wardName = ward.ward_name,
+                        districtName = district.district_name,
+                        provinceName = province.province_name
                     });
                 }
                 catch(Exception e)
@@ -146,7 +197,36 @@ namespace api.Controllers
                     updateDeliveryAddress.wardId = updateAddModel.wardId;
 
                     dbcontext.SaveChanges();
-                    return Ok("Update Delivery Address Success.");
+                    
+                    Ward ward = dbcontext.Wards.Find(updateDeliveryAddress.wardId);
+                    if (ward == null)
+                    {
+                        return NotFound("Ward not found.");
+                    }
+
+                    District district = dbcontext.Districts.Find(ward.district_id);
+                    if (district == null)
+                    {
+                        return NotFound("District not found.");
+                    }
+
+                    Province province = dbcontext.Provinces.Find(district.province_id);
+                    if (province == null)
+                    {
+                        return NotFound("Province not found.");
+                    }
+                    
+                    return Ok(new DeliveryAddressDTO()
+                    {
+                        id = updateDeliveryAddress.id,
+                        name = updateDeliveryAddress.name,
+                        address = updateDeliveryAddress.address,
+                        telephone = updateDeliveryAddress.telephone,
+                        wardId = updateDeliveryAddress.wardId,
+                        wardName = ward.ward_name,
+                        districtName = district.district_name,
+                        provinceName = province.province_name
+                    });
                 }
                 catch (Exception e)
                 {
