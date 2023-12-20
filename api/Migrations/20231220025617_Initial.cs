@@ -116,13 +116,14 @@ namespace api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    billNumber = table.Column<int>(type: "int", nullable: false),
                     userId = table.Column<int>(type: "int", nullable: false),
                     shippingAddId = table.Column<int>(type: "int", nullable: false),
                     deilveryAddId = table.Column<int>(type: "int", nullable: false),
                     unitPriceId = table.Column<int>(type: "int", nullable: false),
                     charge = table.Column<double>(type: "float", nullable: false),
                     pickupType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    deliverType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    deliveryType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     insuranceFee = table.Column<double>(type: "float", nullable: false),
                     totalCharge = table.Column<double>(type: "float", nullable: false),
                     payer = table.Column<string>(type: "nvarchar(max)", nullable: false),

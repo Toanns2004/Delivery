@@ -6,6 +6,8 @@ public class Bill
 {
     public int id { get; set; }
     
+    public int billNumber { get; set; }
+    
     public int userId { get; set; }
     [ForeignKey("userId")]
     public User User { get; set; }
@@ -22,7 +24,7 @@ public class Bill
     
     public string pickupType { get; set; }
     
-    public string deliverType { get; set; }
+    public string deliveryType { get; set; }
     
     public double insuranceFee { get; set; }
     

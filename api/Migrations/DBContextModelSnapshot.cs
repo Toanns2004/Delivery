@@ -30,6 +30,9 @@ namespace api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
+                    b.Property<int>("billNumber")
+                        .HasColumnType("int");
+
                     b.Property<double>("charge")
                         .HasColumnType("float");
 
@@ -39,7 +42,7 @@ namespace api.Migrations
                     b.Property<int>("deilveryAddId")
                         .HasColumnType("int");
 
-                    b.Property<string>("deliverType")
+                    b.Property<string>("deliveryType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
