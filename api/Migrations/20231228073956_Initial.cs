@@ -44,8 +44,8 @@ namespace api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    weightLimit = table.Column<double>(type: "float", nullable: false),
+                    range = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    weightLimit = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     chargeRate = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
@@ -96,6 +96,7 @@ namespace api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    prefix = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     roleId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -116,7 +117,7 @@ namespace api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    billNumber = table.Column<int>(type: "int", nullable: false),
+                    billNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     userId = table.Column<int>(type: "int", nullable: false),
                     shippingAddId = table.Column<int>(type: "int", nullable: false),
                     deilveryAddId = table.Column<int>(type: "int", nullable: false),
@@ -128,7 +129,8 @@ namespace api.Migrations
                     totalCharge = table.Column<double>(type: "float", nullable: false),
                     payer = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     note = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    cod = table.Column<double>(type: "float", nullable: false)
+                    cod = table.Column<double>(type: "float", nullable: false),
+                    dateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -281,9 +283,10 @@ namespace api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    fullname = table.Column<int>(type: "int", nullable: false),
+                    fullname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     roleId = table.Column<int>(type: "int", nullable: false),
                     postOfficeId = table.Column<int>(type: "int", nullable: false)
                 },

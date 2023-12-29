@@ -6,7 +6,7 @@ public class Bill
 {
     public int id { get; set; }
     
-    public int billNumber { get; set; }
+    public string billNumber { get; set; }
     
     public int userId { get; set; }
     [ForeignKey("userId")]
@@ -35,4 +35,6 @@ public class Bill
     public string note { get; set; }
     
     public double cod { get; set; }
+    
+    public DateTime dateCreated { get; set; }
 }

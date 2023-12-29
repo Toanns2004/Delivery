@@ -31,7 +31,8 @@ namespace api.Controllers
             {
                 try
                 {
-                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(regModel.password);
+                    string salt = BCrypt.Net.BCrypt.GenerateSalt(10);
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(regModel.password, salt);
 
                     User newUser = new User
                     {
@@ -51,10 +52,10 @@ namespace api.Controllers
                 }
                 catch (Exception e)
                 {
-                    return BadRequest(e.Message);
+                    return Unauthorized("Registration error.");
                 }
             }
-            return BadRequest("Registration error.");
+            return Unauthorized("Registration error.");
         }
     
         //login and receive a token
@@ -88,6 +89,7 @@ namespace api.Controllers
                         expires: DateTime.Now.AddMinutes(30),
                         signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
                     );
+                    
                     return Ok(new
                         {
                             token = new JwtSecurityTokenHandler().WriteToken(token),

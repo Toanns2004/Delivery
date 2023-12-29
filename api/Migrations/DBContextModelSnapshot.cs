@@ -30,14 +30,18 @@ namespace api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
-                    b.Property<int>("billNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("billNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("charge")
                         .HasColumnType("float");
 
                     b.Property<double>("cod")
                         .HasColumnType("float");
+
+                    b.Property<DateTime>("dateCreated")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("deilveryAddId")
                         .HasColumnType("int");
@@ -193,8 +197,13 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("fullname")
-                        .HasColumnType("int");
+                    b.Property<string>("fullname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("postOfficeId")
                         .HasColumnType("int");
@@ -224,6 +233,10 @@ namespace api.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("prefix")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -390,12 +403,13 @@ namespace api.Migrations
                     b.Property<double>("chargeRate")
                         .HasColumnType("float");
 
-                    b.Property<string>("name")
+                    b.Property<string>("range")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("weightLimit")
-                        .HasColumnType("float");
+                    b.Property<string>("weightLimit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
 

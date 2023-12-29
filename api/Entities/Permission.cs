@@ -6,6 +6,7 @@ public class Permission
 {
     public int id { get; set; }
     
+    public string prefix { get; set; }
     public string name { get; set; }
 
     public int roleId

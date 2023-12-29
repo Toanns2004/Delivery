@@ -4,9 +4,9 @@ public class UnitPrice
 {
     public int id { get; set; }
     
-    public string name { get; set; }
+    public string range { get; set; }
     
-    public double weightLimit { get; set; }
+    public string weightLimit { get; set; }
     
     public double chargeRate { get; set; }
 }
