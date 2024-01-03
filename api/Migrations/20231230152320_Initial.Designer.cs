@@ -12,7 +12,7 @@ using api.Context;
 namespace api.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20231228073956_Initial")]
+    [Migration("20231230152320_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -379,12 +379,11 @@ namespace api.Migrations
                     b.Property<int>("employeeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("time")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("typeId")
+                        .HasColumnType("int");
 
                     b.HasKey("id");
 
@@ -392,7 +391,26 @@ namespace api.Migrations
 
                     b.HasIndex("employeeId");
 
+                    b.HasIndex("typeId");
+
                     b.ToTable("Status");
+                });
+
+            modelBuilder.Entity("api.Entities.StatusType", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("id");
+
+                    b.ToTable("StatusTypes");
                 });
 
             modelBuilder.Entity("api.Entities.UnitPrice", b =>
@@ -609,9 +627,17 @@ namespace api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("api.Entities.StatusType", "StatusType")
+                        .WithMany()
+                        .HasForeignKey("typeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Bill");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("StatusType");
                 });
 
             modelBuilder.Entity("api.Entities.Ward", b =>

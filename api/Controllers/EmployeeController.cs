@@ -23,9 +23,88 @@ namespace api.Controllers
             dbContext = context;
             configuration = config;
         }
+        
+        //get all acc
+        [HttpGet]
+        public IActionResult Index()
+        {
+            List<EmployeeDTO> employees = dbContext.Employees
+                .Select(emp => new EmployeeDTO()
+                {
+                    id = emp.id,
+                    username = emp.username,
+                    fullname = emp.fullname,
+                    email = emp.email,
+                    role = emp.Role.name,
+                    postOffice = emp.PostOffice.postName
+                })
+                .ToList();
+            return Ok(employees);
+        }
+        
+        //get acc detail
+        [HttpGet]
+        [Route("detail/{id}")]
+        public IActionResult Detail(int id)
+        {
+            try
+            {
+                Employee employee = dbContext.Employees.Find(id);
+                if (employee == null)
+                {
+                    return NotFound("Account not found.");
+                }
 
+                Role role = dbContext.Roles.Find(employee.roleId);
+                if (role == null)
+                {
+                    return NotFound("Role not found.");
+                }
+
+                PostOffice postOffice = dbContext.PostOffices.Find(employee.postOfficeId);
+                if (postOffice == null)
+                {
+                    return NotFound("Post office not found.");
+                }
+
+                Ward ward = dbContext.Wards.Find(postOffice.wardId);
+                if (ward == null)
+                {
+                    return NotFound("Ward not found.");
+                }
+
+                District district = dbContext.Districts.Find(ward.district_id);
+                if (district == null)
+                {
+                    return NotFound("District not found.");
+                }
+                
+
+                EmployeeDTO empDetails = new EmployeeDTO()
+                {
+                    id = employee.id,
+                    postOfficeId = employee.postOfficeId,
+                    districtId = district.id,
+                    provinceId = district.province_id,
+                    roleId = employee.roleId,
+                    username = employee.username,
+                    fullname = employee.fullname,
+                    email = employee.email,
+                    role = role.name,
+                    postOffice = postOffice.postName
+                };
+
+                return Ok(empDetails);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+            
+        }
         
         //create acc
+        [HttpPost]
         [Route("create")]
         public IActionResult Create(EmployeeModel newEmployeeModel)
         {
@@ -60,7 +139,78 @@ namespace api.Controllers
             return BadRequest("Create account error");
         }
         
+        //update acc
+        
+        [HttpPut]
+        [Route("update/{id}")]
+        public IActionResult AccUpdate(int id, EmployeeModel updateEmpModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Employee updateEmployee = dbContext.Employees.Find(id);
+                    if (updateEmployee == null)
+                    {
+                        return NotFound("Employee Not found.");
+                    }
+
+                    updateEmployee.fullname = updateEmpModel.fullname;
+                    updateEmployee.email = updateEmpModel.email;
+                    updateEmployee.roleId = updateEmpModel.roleId;
+                    updateEmployee.postOfficeId = updateEmpModel.postOfficeId;
+                    if (!string.IsNullOrEmpty(updateEmpModel.username))
+                    {
+                        updateEmployee.username = updateEmpModel.username;
+                    }
+
+                    if (!string.IsNullOrEmpty(updateEmpModel.password))
+                    {
+                        updateEmployee.password = updateEmpModel.password;
+                    }
+                    
+                    
+                    dbContext.SaveChanges();
+
+                    return Ok(new EmployeeDTO()
+                    {
+                        fullname = updateEmployee.fullname
+                    });
+                }
+                catch (Exception e)
+                {
+                    return BadRequest(e.Message);
+                }
+            }
+
+            return BadRequest("Update employee error.");
+        }
+        
+        //delete Acc
+        [HttpDelete]
+        [Route("delete/{id}")]
+        public IActionResult DeleteAcc(int id)
+        {
+            try
+            {
+                Employee deleteEmployee = dbContext.Employees.Find(id);
+                if (deleteEmployee == null)
+                {
+                    return NotFound("Employee not found");
+                }
+
+                dbContext.Employees.Remove(deleteEmployee);
+                dbContext.SaveChanges();
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        
         //login
+        [HttpPost]
         [Route("login")]
         public IActionResult Login(EmpLoginModel loginModel)
         {

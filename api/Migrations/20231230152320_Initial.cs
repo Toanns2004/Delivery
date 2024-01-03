@@ -39,6 +39,19 @@ namespace api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StatusTypes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StatusTypes", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UnitPrices",
                 columns: table => new
                 {
@@ -313,7 +326,7 @@ namespace api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    typeId = table.Column<int>(type: "int", nullable: false),
                     employeeId = table.Column<int>(type: "int", nullable: false),
                     billId = table.Column<int>(type: "int", nullable: false),
                     time = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -331,6 +344,12 @@ namespace api.Migrations
                         name: "FK_Status_Employees_employeeId",
                         column: x => x.employeeId,
                         principalTable: "Employees",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Status_StatusTypes_typeId",
+                        column: x => x.typeId,
+                        principalTable: "StatusTypes",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -406,6 +425,11 @@ namespace api.Migrations
                 column: "employeeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Status_typeId",
+                table: "Status",
+                column: "typeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Wards_district_id",
                 table: "Wards",
                 column: "district_id");
@@ -434,6 +458,9 @@ namespace api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Employees");
+
+            migrationBuilder.DropTable(
+                name: "StatusTypes");
 
             migrationBuilder.DropTable(
                 name: "UnitPrices");

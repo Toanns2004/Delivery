@@ -32,6 +32,27 @@ namespace api.Controllers
                 .ToList();
             return Ok(postoffices);
         }
+
+        [HttpGet]
+        [Route("bydist/{id}")]
+        public IActionResult POByDistrict(int id)
+        {
+            
+            List<PostOfficeDTO> postoffices = dbContext.PostOffices
+                .Where(po => dbContext.Wards.Any(ward => ward.district_id == id && ward.id == po.wardId))
+                .Select(po => new PostOfficeDTO()
+                {
+                    id = po.id,
+                    wardId = po.wardId,
+                    postCode = po.postCode,
+                    postName = po.postName,
+                    address = po.address,
+                    latitude = po.latitude,
+                    longtitude = po.longtitude
+                })
+                .ToList();
+            return Ok(postoffices);
+        }
     }
 }
 

@@ -20,10 +20,40 @@ namespace api.Controllers
             dbContext = context;
         } 
         
+        //get all bills
+        [HttpGet]
+        public IActionResult Index()
+        {
+            List<BillDTO> bills = dbContext.Bills
+                .Select(bill => new BillDTO()
+                {
+                    billNumber = bill.billNumber,
+                    dateCreated = bill.dateCreated,
+                    DeliveryAddressDto = dbContext.DeliveryAddresses
+                        .Where(add => add.id == bill.deilveryAddId)
+                        .Select(add => new DeliveryAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    name = dbContext.BillDetails
+                        .Where(d => d.billId == bill.id)
+                        .Select(d => d.name)
+                        .FirstOrDefault()
+                })
+                .ToList();
+            return Ok(bills);
+        }
+        
         //get bills by user
         [HttpGet]
         [Route("user/{userId}")]
-        public IActionResult Index(int userId)
+        public IActionResult BillByUser(int userId)
         {
             List<BillDTO> bills = dbContext.Bills
                 .Where(bill => bill.userId == userId)

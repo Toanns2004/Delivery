@@ -37,6 +37,8 @@ namespace api.Context
         public DbSet<UnitPrice> UnitPrices { get; set; }
         
         public DbSet<Status> Status { get; set; }
+        
+        public DbSet<StatusType> StatusTypes { get; set; }
     }
 }
 

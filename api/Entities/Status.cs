@@ -6,7 +6,9 @@ public class Status
 {
     public int id { get; set; }
     
-    public string name { get; set; }
+    public int typeId { get; set; }
+    [ForeignKey("typeId")]
+    public StatusType StatusType { get; set; }
     
     public int employeeId { get; set; }
     [ForeignKey("employeeId")]

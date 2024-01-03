@@ -47,7 +47,10 @@ namespace api.Controllers
                     dbContext.SaveChanges();
                     return Created("", new UserDTO
                     {
-                        fullname = newUser.fullname
+                        id = newUser.id,
+                        fullname = newUser.fullname,
+                        email = newUser.email,
+                        token = null
                     });
                 }
                 catch (Exception e)
@@ -63,44 +66,51 @@ namespace api.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginModel loginModel)
         {
-            //compare email
-            var user = dbContext.Users.SingleOrDefault(u => u.email == loginModel.email);
-            if (user != null)
+            if (ModelState.IsValid)
             {
-                //compare password
-                bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginModel.password, user.password);
-                if (passwordMatch)
+                //compare email
+                var user = dbContext.Users.SingleOrDefault(u => u.email == loginModel.email);
+                if (user != null)
                 {
-                    var claims = new[]
+                    //compare password
+                    bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginModel.password, user.password);
+                    if (passwordMatch)
                     {
-                        new Claim(ClaimTypes.Email, user.email),
-                        new Claim("id", user.id.ToString()),
-                        new Claim("fullname", user.fullname),
-                        new Claim(JwtRegisteredClaimNames.Aud, configuration["Jwt:Audience"]),
-                        new Claim(JwtRegisteredClaimNames.Iss, configuration["Jwt:Issuer"])
-                    };
-                    
-                    //generate jwt token
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-                    var token = new JwtSecurityToken(
-                        issuer: configuration["Issuer"],
-                        audience: configuration["Audience"],
-                        claims: claims,
-                        expires: DateTime.Now.AddMinutes(30),
-                        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-                    );
-                    
-                    return Ok(new
+                        var payload = new[]
                         {
-                            token = new JwtSecurityTokenHandler().WriteToken(token),
-                            id = user.id,
-                            fullname = user.fullname
-                        }
-                    );
+                            new Claim(ClaimTypes.Email, user.email),
+                            new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
+                            new Claim(ClaimTypes.Name, user.fullname),
+                            new Claim(JwtRegisteredClaimNames.Aud, configuration["Jwt:Audience"]),
+                            new Claim(JwtRegisteredClaimNames.Iss, configuration["Jwt:Issuer"])
+                        };
+                    
+                        //generate jwt token
+                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+                        var token = new JwtSecurityToken(
+                            issuer: configuration["Issuer"],
+                            audience: configuration["Audience"],
+                            claims: payload,
+                            expires: DateTime.Now.AddMinutes(360),
+                            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+                        );
+                    
+                        return Ok(new UserDTO()
+                            {
+                                token = new JwtSecurityTokenHandler().WriteToken(token),
+                                id = user.id,
+                                fullname = user.fullname,
+                                email = user.email
+                            }
+                        );
+                    }
+                    return Unauthorized("Email or password incorrect");
                 }
-            }
 
-            return Unauthorized();
+                return Unauthorized("Email or password incorrect");
+            }
+            
+            return Unauthorized("Email or password incorrect");
         }
     
     }
