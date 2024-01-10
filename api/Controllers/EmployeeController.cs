@@ -6,6 +6,7 @@ using api.DTOs;
 using api.Entities;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
@@ -214,7 +215,7 @@ namespace api.Controllers
         [Route("login")]
         public IActionResult Login(EmpLoginModel loginModel)
         {
-            var emp = dbContext.Employees.SingleOrDefault(e => e.username == loginModel.username);
+            var emp = dbContext.Employees.Include(e => e.Role).Include(e => e.PostOffice).SingleOrDefault(e => e.username == loginModel.username);
             if (emp != null)
             {
                 bool pwdMatch = BCrypt.Net.BCrypt.Verify(loginModel.password, emp.password);
@@ -224,6 +225,8 @@ namespace api.Controllers
                     {
                         new Claim(ClaimTypes.Name, emp.username),
                         new Claim(ClaimTypes.Email, emp.email),
+                        new Claim("Role", emp.Role.name),
+                        new Claim("PostOffice", emp.PostOffice.id.ToString()),
                         new Claim(JwtRegisteredClaimNames.Aud, configuration["Jwt:Audience"]),
                         new Claim(JwtRegisteredClaimNames.Iss, configuration["Jwt:Issuer"])
                     };
@@ -233,7 +236,7 @@ namespace api.Controllers
                         issuer: configuration["Issuer"],
                         audience: configuration["Audience"],
                         claims: claims,
-                        expires: DateTime.Now.AddMinutes(30),
+                        expires: DateTime.Now.AddMinutes(Convert.ToInt32(configuration["Jwt: LifeTime"])),
                         signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
                     );
 
@@ -251,7 +254,9 @@ namespace api.Controllers
                             token = new JwtSecurityTokenHandler().WriteToken(token),
                             username = emp.username,
                             fullname = emp.fullname,
-                            permissions
+                            permissions,
+                            id = emp.id,
+                            role = emp.Role.name
                         }
                     );
                 }

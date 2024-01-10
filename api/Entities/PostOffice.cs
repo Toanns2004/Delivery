@@ -8,12 +8,8 @@ public class PostOffice
     public int id { get; set; }
     
     public int wardId { get; set; }
-    [ForeignKey("wardId")]
-    public Ward Ward
-    {
-        get;
-        set;
-    }
+    [ForeignKey("wardId")] 
+    public Ward Ward { get; set; }
     
     public string postCode { get; set; }
     
@@ -22,10 +18,7 @@ public class PostOffice
     public string address { get; set; }
 
     public string latitude
-    {
-        get;
-        set;
-    }
+    { get; set; }
     
-    public string longtitude { get; set; }
+    public string longitude { get; set; }
 }

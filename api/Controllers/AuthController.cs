@@ -82,7 +82,7 @@ namespace api.Controllers
                             new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
                             new Claim(ClaimTypes.Name, user.fullname),
                             new Claim(JwtRegisteredClaimNames.Aud, configuration["Jwt:Audience"]),
-                            new Claim(JwtRegisteredClaimNames.Iss, configuration["Jwt:Issuer"])
+                            new Claim(JwtRegisteredClaimNames.Iss, configuration["Jwt:Issuer"]),
                         };
                     
                         //generate jwt token
@@ -91,7 +91,7 @@ namespace api.Controllers
                             issuer: configuration["Issuer"],
                             audience: configuration["Audience"],
                             claims: payload,
-                            expires: DateTime.Now.AddMinutes(360),
+                            expires: DateTime.Now.AddMinutes(Convert.ToInt32(configuration["Jwt: LifeTime"])),
                             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
                         );
                     

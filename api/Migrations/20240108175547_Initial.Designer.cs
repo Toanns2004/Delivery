@@ -12,7 +12,7 @@ using api.Context;
 namespace api.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20231230152320_Initial")]
+    [Migration("20240108175547_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -46,7 +46,7 @@ namespace api.Migrations
                     b.Property<DateTime>("dateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("deilveryAddId")
+                    b.Property<int>("deliveryAddId")
                         .HasColumnType("int");
 
                     b.Property<string>("deliveryType")
@@ -81,6 +81,10 @@ namespace api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("id");
+
+                    b.HasIndex("deliveryAddId");
+
+                    b.HasIndex("shippingAddId");
 
                     b.HasIndex("unitPriceId");
 
@@ -269,7 +273,7 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("longtitude")
+                    b.Property<string>("longitude")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -376,7 +380,8 @@ namespace api.Migrations
                     b.Property<int>("billId")
                         .HasColumnType("int");
 
-                    b.Property<int>("employeeId")
+                    b.Property<int?>("employeeId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<DateTime>("time")
@@ -495,6 +500,18 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Entities.Bill", b =>
                 {
+                    b.HasOne("api.Entities.DeliveryAddress", "DeliveryAddress")
+                        .WithMany()
+                        .HasForeignKey("deliveryAddId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Entities.ShippingAddress", "ShippingAddress")
+                        .WithMany()
+                        .HasForeignKey("shippingAddId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("api.Entities.UnitPrice", "UnitPrice")
                         .WithMany()
                         .HasForeignKey("unitPriceId")
@@ -506,6 +523,10 @@ namespace api.Migrations
                         .HasForeignKey("userId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DeliveryAddress");
+
+                    b.Navigation("ShippingAddress");
 
                     b.Navigation("UnitPrice");
 

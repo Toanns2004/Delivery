@@ -14,5 +14,11 @@ public class PostOfficeDTO
 
     public string latitude { get; set; }
     
-    public string longtitude { get; set; }
+    public string longitude { get; set; }
+    
+    public string wardName { get; set; }
+    
+    public string districtName { get; set; }
+    
+    public string provinceName { get; set; }
 }

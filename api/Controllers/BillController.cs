@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using api.Context;
 using api.DTOs;
 using api.Entities;
@@ -30,7 +31,7 @@ namespace api.Controllers
                     billNumber = bill.billNumber,
                     dateCreated = bill.dateCreated,
                     DeliveryAddressDto = dbContext.DeliveryAddresses
-                        .Where(add => add.id == bill.deilveryAddId)
+                        .Where(add => add.id == bill.deliveryAddId)
                         .Select(add => new DeliveryAddressDTO()
                         {
                             name = add.name,
@@ -41,9 +42,26 @@ namespace api.Controllers
                             provinceName = add.Ward.District.Province.province_name
                         })
                         .FirstOrDefault(),
-                    name = dbContext.BillDetails
+                    BillDetailsDto = dbContext.BillDetails
                         .Where(d => d.billId == bill.id)
-                        .Select(d => d.name)
+                        .Select(d => new BillDetailsDTO()
+                        {
+                            name = d.name,
+                            weight = d.weight,
+                            length = d.length,
+                            width = d.width,
+                            height = d.height
+                        })
+                        .FirstOrDefault(),
+                    latestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .Select(stt => new StatusDTO()
+                        {
+                            id = stt.id,
+                            typeId = stt.StatusType.id,
+                            name = stt.StatusType.name
+                        })
                         .FirstOrDefault()
                 })
                 .ToList();
@@ -59,10 +77,11 @@ namespace api.Controllers
                 .Where(bill => bill.userId == userId)
                 .Select(bill => new BillDTO()
                 {
+                    id = bill.id,
                     billNumber = bill.billNumber,
                     dateCreated = bill.dateCreated,
                     DeliveryAddressDto = dbContext.DeliveryAddresses
-                        .Where(add => add.id == bill.deilveryAddId)
+                        .Where(add => add.id == bill.deliveryAddId)
                         .Select(add => new DeliveryAddressDTO()
                         {
                             name = add.name,
@@ -73,13 +92,89 @@ namespace api.Controllers
                             provinceName = add.Ward.District.Province.province_name
                         })
                         .FirstOrDefault(),
-                    name = dbContext.BillDetails
+                    BillDetailsDto = dbContext.BillDetails
                         .Where(d => d.billId == bill.id)
-                        .Select(d => d.name)
+                        .Select(d => new BillDetailsDTO()
+                        {
+                            name = d.name,
+                            weight = d.weight,
+                            length = d.length,
+                            width = d.width,
+                            height = d.height
+                        })
+                        .FirstOrDefault(),
+                    latestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .Select(stt => new StatusDTO()
+                        {
+                            id = stt.id,
+                            typeId = stt.StatusType.id,
+                            name = stt.StatusType.name,
+                            time = stt.time
+                        })
                         .FirstOrDefault()
                 })
                 .ToList();
             return Ok(bills);
+        }
+        
+        //get bill by month
+        [HttpGet]
+        [Route("month")]
+        public IActionResult BillByMount(int id, int month, int year)
+        {
+            if (month < 1 || month > 12 || year < 1)
+            {
+                return BadRequest("Invalid month");
+            }
+
+            DateTime startDate = new DateTime(year, month, 1);
+            DateTime endDate = startDate.AddMonths(1).AddDays(-1);
+            
+            List<BillDTO> billOfMonth = dbContext.Bills
+                .Where(bill => bill.userId == id && bill.dateCreated >= startDate && bill.dateCreated <= endDate)
+                .Select(bill => new BillDTO()
+                    {
+                        billNumber = bill.billNumber,
+                        dateCreated = bill.dateCreated,
+                        DeliveryAddressDto = dbContext.DeliveryAddresses
+                            .Where(add => add.id == bill.deliveryAddId)
+                            .Select(add => new DeliveryAddressDTO()
+                            {
+                                name = add.name,
+                                telephone = add.telephone,
+                                address = add.address,
+                                wardName = add.Ward.ward_name,
+                                districtName = add.Ward.District.district_name,
+                                provinceName = add.Ward.District.Province.province_name
+                            })
+                            .FirstOrDefault(),
+                        BillDetailsDto = dbContext.BillDetails
+                            .Where(d => d.billId == bill.id)
+                            .Select(d => new BillDetailsDTO()
+                            {
+                                name = d.name,
+                                weight = d.weight,
+                                length = d.length,
+                                width = d.width,
+                                height = d.height
+                            })
+                            .FirstOrDefault(),
+                        latestStatus = dbContext.Status
+                            .Where(stt => stt.billId == bill.id)
+                            .OrderByDescending(stt => stt.time)
+                            .Select(stt => new StatusDTO()
+                            {
+                                id = stt.id,
+                                typeId = stt.StatusType.id,
+                                name = stt.StatusType.name,
+                                time = stt.time
+                            })
+                            .FirstOrDefault()
+                    })
+                    .ToList();
+            return Ok(billOfMonth);
         }
         
         // create bill
@@ -217,7 +312,7 @@ namespace api.Controllers
                         billNumber = nextBillNum,
                         userId = newBillModel.userId,
                         shippingAddId = newBillModel.shippingAddId,
-                        deilveryAddId = newBillModel.deliveryAddId,
+                        deliveryAddId = newBillModel.deliveryAddId,
                         unitPriceId = newUnitPrice.id,
                         charge = charge,
                         pickupType = newBillModel.pickupType,
@@ -248,6 +343,15 @@ namespace api.Controllers
                     dbContext.Add(newBillDetail);
                     dbContext.SaveChanges();
 
+                    Status status = new Status()
+                    {
+                        typeId = 1,
+                        billId = newBill.id,
+                        time = DateTime.Now
+                    };
+                    dbContext.Add(status);
+                    dbContext.SaveChanges();
+                    
                     return Created("Create bill successfully", new BillDTO()
                     {
                         billNumber = newBill.billNumber
@@ -261,6 +365,768 @@ namespace api.Controllers
 
             return BadRequest("Create Bill error");
         }
+        
+        //get bill details by Bill number
+        [HttpGet]
+        [Route("detail/{bn}")]
+        public IActionResult BillDetails(string bn)
+        {
+            BillDTO billDetails = dbContext.Bills
+                .Where(bill => bill.billNumber == bn)
+                .Select(bill => new BillDTO()
+                {
+                    id = bill.id,
+                    billNumber = bill.billNumber,
+                    totalCharge = bill.totalCharge,
+                    payer = bill.payer,
+                    cod = bill.cod,
+                    dateCreated = bill.dateCreated,
+                    note = bill.note,
+                    DeliveryAddressDto = dbContext.DeliveryAddresses
+                        .Where(add => add.id == bill.deliveryAddId)
+                        .Select(add => new DeliveryAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    ShippingAddressDto = dbContext.ShippingAddresses
+                        .Where(add => add.id == bill.shippingAddId)
+                        .Select(add => new ShippingAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    BillDetailsDto = dbContext.BillDetails
+                        .Where(d => d.billId == bill.id)
+                        .Select(d => new BillDetailsDTO()
+                        {
+                            name = d.name,
+                            weight = d.weight,
+                            length = d.length,
+                            width = d.width,
+                            height = d.height,
+                            nature = d.nature
+                        })
+                        .FirstOrDefault(),
+                    latestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .Select(stt => new StatusDTO()
+                        {
+                            id = stt.id,
+                            typeId = stt.StatusType.id,
+                            name = stt.StatusType.name
+                        })
+                        .FirstOrDefault()
+                })
+                .FirstOrDefault();
+            return Ok(billDetails);
+        }
+        
+        //get bills to receive from shipper
+        [HttpGet]
+        [Route("receive/shipper")]
+        public IActionResult RcvFromShipper()
+        {
+            var emp = HttpContext.User;
+
+            var role = emp.Claims.FirstOrDefault(r => r.Type == "Role")?.Value;
+            var poId = int.Parse(emp.Claims.FirstOrDefault(p => p.Type == "PostOffice")?.Value);
+            PostOffice postOffice = dbContext.PostOffices.Include(p => p.Ward).FirstOrDefault(p => p.id == poId);
+            if (postOffice == null)
+            {
+                return NotFound("PostOffice not found.");
+            }
+            if (role == "Postman")
+            {
+                List<BillDTO> rcvBills = dbContext.Bills
+                    .Where(bill =>
+                        bill.ShippingAddress.Ward.district_id == postOffice.Ward.district_id &&
+                        bill.pickupType == "home"
+                    )
+                    .Select(bill => new
+                    {
+                        Bill = bill,
+                        LatestStatus = dbContext.Status
+                            .Where(stt => stt.billId == bill.id)
+                            .OrderByDescending(stt => stt.time)
+                            .FirstOrDefault()
+                    })
+                    .Where(result => result.LatestStatus.StatusType.name == "Created")
+                    .Select(result => new BillDTO
+                    {
+                        id = result.Bill.id,
+                        billNumber = result.Bill.billNumber,
+                        totalCharge = result.Bill.totalCharge,
+                    payer = result.Bill.payer,
+                    cod = result.Bill.cod,
+                    dateCreated = result.Bill.dateCreated,
+                    note = result.Bill.note,
+                    DeliveryAddressDto = dbContext.DeliveryAddresses
+                        .Where(add => add.id == result.Bill.deliveryAddId)
+                        .Select(add => new DeliveryAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    ShippingAddressDto = dbContext.ShippingAddresses
+                        .Where(add => add.id == result.Bill.shippingAddId)
+                        .Select(add => new ShippingAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    BillDetailsDto = dbContext.BillDetails
+                        .Where(d => d.billId == result.Bill.id)
+                        .Select(d => new BillDetailsDTO()
+                        {
+                            name = d.name,
+                            weight = d.weight,
+                            length = d.length,
+                            width = d.width,
+                            height = d.height,
+                            nature = d.nature
+                        })
+                        .FirstOrDefault(),
+                    latestStatus = dbContext.Status
+                        .Where(stt => stt.billId == result.Bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .Select(stt => new StatusDTO()
+                        {
+                            id = stt.id,
+                            typeId = stt.StatusType.id,
+                            name = stt.StatusType.name
+                        })
+                        .FirstOrDefault()
+                    })
+                    .ToList();
+
+                return Ok(rcvBills);
+
+            }else if (role == "Staff")
+                {
+                    List<BillDTO> rcvBills = dbContext.Bills
+                    .Where(bill =>
+                        bill.ShippingAddress.Ward.district_id == postOffice.Ward.district_id &&
+                        bill.pickupType == "post-office"
+                    )
+                    .Select(bill => new
+                    {
+                        Bill = bill,
+                        LatestStatus = dbContext.Status
+                            .Where(stt => stt.billId == bill.id)
+                            .OrderByDescending(stt => stt.time)
+                            .FirstOrDefault()
+                    })
+                    .Where(result => result.LatestStatus.StatusType.name == "Created") // Lọc theo trạng thái 'Created'
+                    .Select(result => new BillDTO
+                    {
+                        id = result.Bill.id,
+                        billNumber = result.Bill.billNumber,
+                        totalCharge = result.Bill.totalCharge,
+                    payer = result.Bill.payer,
+                    cod = result.Bill.cod,
+                    dateCreated = result.Bill.dateCreated,
+                    note = result.Bill.note,
+                    DeliveryAddressDto = dbContext.DeliveryAddresses
+                        .Where(add => add.id == result.Bill.deliveryAddId)
+                        .Select(add => new DeliveryAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    ShippingAddressDto = dbContext.ShippingAddresses
+                        .Where(add => add.id == result.Bill.shippingAddId)
+                        .Select(add => new ShippingAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    BillDetailsDto = dbContext.BillDetails
+                        .Where(d => d.billId == result.Bill.id)
+                        .Select(d => new BillDetailsDTO()
+                        {
+                            name = d.name,
+                            weight = d.weight,
+                            length = d.length,
+                            width = d.width,
+                            height = d.height,
+                            nature = d.nature
+                        })
+                        .FirstOrDefault(),
+                    latestStatus = dbContext.Status
+                        .Where(stt => stt.billId == result.Bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .Select(stt => new StatusDTO()
+                        {
+                            id = stt.StatusType.id,
+                            name = stt.StatusType.name
+                        })
+                        .FirstOrDefault()
+                    })
+                    .ToList();
+
+                return Ok(rcvBills);
+                }
+                else
+                {
+                    return BadRequest("Invalid role");
+                }
+        }
+        
+        //receive from postman
+        [HttpGet]
+        [Route("receive/postman")]
+        [Authorize(Policy = "RequireStaffRole")]
+        public IActionResult RcvFromPostman()
+        {
+            var emp = HttpContext.User;
+            
+            var poId = int.Parse(emp.Claims.FirstOrDefault(p => p.Type == "PostOffice")?.Value);
+            PostOffice postOffice = dbContext.PostOffices.Include(p => p.Ward).FirstOrDefault(p => p.id == poId);
+            if (postOffice == null)
+            {
+                return NotFound("PostOffice not found.");
+            }
+            List<BillDTO> rcvBills = dbContext.Bills
+            .Where(bill =>
+                bill.ShippingAddress.Ward.district_id == postOffice.Ward.district_id
+            )
+            .Select(bill => new
+            {
+                Bill = bill,
+                LatestStatus = dbContext.Status
+                    .Where(stt => stt.billId == bill.id)
+                    .OrderByDescending(stt => stt.time)
+                    .FirstOrDefault()
+            })
+            .Where(result => result.LatestStatus.StatusType.name == "Received from shipper") // Lọc theo trạng thái 'Created'
+            .Select(result => new BillDTO
+            {
+                id = result.Bill.id,
+                billNumber = result.Bill.billNumber,
+                totalCharge = result.Bill.totalCharge,
+            payer = result.Bill.payer,
+            cod = result.Bill.cod,
+            dateCreated = result.Bill.dateCreated,
+            note = result.Bill.note,
+            DeliveryAddressDto = dbContext.DeliveryAddresses
+                .Where(add => add.id == result.Bill.deliveryAddId)
+                .Select(add => new DeliveryAddressDTO()
+                {
+                    name = add.name,
+                    telephone = add.telephone,
+                    address = add.address,
+                    wardName = add.Ward.ward_name,
+                    districtName = add.Ward.District.district_name,
+                    provinceName = add.Ward.District.Province.province_name
+                })
+                .FirstOrDefault(),
+            ShippingAddressDto = dbContext.ShippingAddresses
+                .Where(add => add.id == result.Bill.shippingAddId)
+                .Select(add => new ShippingAddressDTO()
+                {
+                    name = add.name,
+                    telephone = add.telephone,
+                    address = add.address,
+                    wardName = add.Ward.ward_name,
+                    districtName = add.Ward.District.district_name,
+                    provinceName = add.Ward.District.Province.province_name
+                })
+                .FirstOrDefault(),
+            BillDetailsDto = dbContext.BillDetails
+                .Where(d => d.billId == result.Bill.id)
+                .Select(d => new BillDetailsDTO()
+                {
+                    name = d.name,
+                    weight = d.weight,
+                    length = d.length,
+                    width = d.width,
+                    height = d.height,
+                    nature = d.nature
+                })
+                .FirstOrDefault(),
+            latestStatus = dbContext.Status
+                .Where(stt => stt.billId == result.Bill.id)
+                .OrderByDescending(stt => stt.time)
+                .Select(stt => new StatusDTO()
+                {
+                    id = stt.id,
+                    typeId = stt.StatusType.id,
+                    name = stt.StatusType.name,
+                    time = stt.time
+                })
+                .FirstOrDefault()
+            })
+            .ToList();
+
+        return Ok(rcvBills);
+        }
+        
+        //bill for dispatch
+        [HttpGet]
+        [Route("dispatch")]
+        [Authorize(Policy = "RequireStaffRole")]
+        public IActionResult BillsAtPO()
+        {
+            var emp = HttpContext.User;
+            
+            var poId = int.Parse(emp.Claims.FirstOrDefault(p => p.Type == "PostOffice")?.Value);
+            
+            List<BillDTO> distpatchBill = dbContext.Bills
+               .Select(bill => new
+                {
+                    Bill = bill,
+                    LatestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .FirstOrDefault()
+                })
+            .Where(result => result.LatestStatus.StatusType.name == "Received at Post Office" &&
+               result.LatestStatus.Employee.PostOffice.id == poId
+               )
+            .Select(result => new BillDTO
+                {
+                    id = result.Bill.id,
+                    billNumber = result.Bill.billNumber,
+                    totalCharge = result.Bill.totalCharge,
+                payer = result.Bill.payer,
+                cod = result.Bill.cod,
+                dateCreated = result.Bill.dateCreated,
+                note = result.Bill.note,
+                DeliveryAddressDto = dbContext.DeliveryAddresses
+                    .Where(add => add.id == result.Bill.deliveryAddId)
+                    .Select(add => new DeliveryAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                ShippingAddressDto = dbContext.ShippingAddresses
+                    .Where(add => add.id == result.Bill.shippingAddId)
+                    .Select(add => new ShippingAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                BillDetailsDto = dbContext.BillDetails
+                    .Where(d => d.billId == result.Bill.id)
+                    .Select(d => new BillDetailsDTO()
+                    {
+                        name = d.name,
+                        weight = d.weight,
+                        length = d.length,
+                        width = d.width,
+                        height = d.height,
+                        nature = d.nature
+                    })
+                    .FirstOrDefault(),
+                latestStatus = dbContext.Status
+                    .Where(stt => stt.billId == result.Bill.id)
+                    .OrderByDescending(stt => stt.time)
+                    .Select(stt => new StatusDTO()
+                    {
+                        id = stt.id,
+                        typeId = stt.StatusType.id,
+                        name = stt.StatusType.name,
+                        time = stt.time
+                    })
+                    .FirstOrDefault()
+                })
+            .ToList();
+            return Ok(distpatchBill);
+        }
+        
+        //receive from transport
+        [HttpGet]
+        [Route("receive/transport")]
+        [Authorize(Policy = "RequireStaffRole")]
+        public IActionResult BillFromTransport()
+        {
+            var emp = HttpContext.User;
+            
+            var poId = int.Parse(emp.Claims.FirstOrDefault(p => p.Type == "PostOffice")?.Value);
+            PostOffice postOffice = dbContext.PostOffices.Include(p => p.Ward).FirstOrDefault(p => p.id == poId);
+            if (postOffice == null)
+            {
+                return NotFound("PostOffice not found.");
+            }
+            
+            List<BillDTO> billFromTransport = dbContext.Bills
+                .Where(bill => bill.DeliveryAddress.Ward.district_id == postOffice.Ward.district_id)
+                .Select(bill => new
+                {
+                    Bill = bill,
+                    LatestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .FirstOrDefault()
+                })
+                .Where(result => result.LatestStatus.StatusType.name == "Transporting"
+                )
+                .Select(result => new BillDTO
+                {
+                    id = result.Bill.id,
+                    billNumber = result.Bill.billNumber,
+                    totalCharge = result.Bill.totalCharge,
+                payer = result.Bill.payer,
+                cod = result.Bill.cod,
+                dateCreated = result.Bill.dateCreated,
+                note = result.Bill.note,
+                DeliveryAddressDto = dbContext.DeliveryAddresses
+                    .Where(add => add.id == result.Bill.deliveryAddId)
+                    .Select(add => new DeliveryAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                ShippingAddressDto = dbContext.ShippingAddresses
+                    .Where(add => add.id == result.Bill.shippingAddId)
+                    .Select(add => new ShippingAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                BillDetailsDto = dbContext.BillDetails
+                    .Where(d => d.billId == result.Bill.id)
+                    .Select(d => new BillDetailsDTO()
+                    {
+                        name = d.name,
+                        weight = d.weight,
+                        length = d.length,
+                        width = d.width,
+                        height = d.height,
+                        nature = d.nature
+                    })
+                    .FirstOrDefault(),
+                latestStatus = dbContext.Status
+                    .Where(stt => stt.billId == result.Bill.id)
+                    .OrderByDescending(stt => stt.time)
+                    .Select(stt => new StatusDTO()
+                    {
+                        id = stt.id,
+                        typeId = stt.StatusType.id,
+                        name = stt.StatusType.name,
+                        time = stt.time
+                    })
+                    .FirstOrDefault()
+                })
+            .ToList();
+            return Ok(billFromTransport);
+        }
+        
+        //delivery to shipper 
+        [HttpGet]
+        [Route("receive/postoffice")]
+        [Authorize(Policy = "RequirePostmanRole")]
+        public IActionResult DlvFromPO()
+        {
+            var emp = HttpContext.User;
+            
+            var poId = int.Parse(emp.Claims.FirstOrDefault(p => p.Type == "PostOffice")?.Value);
+            PostOffice postOffice = dbContext.PostOffices.Include(p => p.Ward).FirstOrDefault(p => p.id == poId);
+            if (postOffice == null)
+            {
+                return NotFound("PostOffice not found.");
+            }
+            
+            List<BillDTO> rcvBills = dbContext.Bills
+                .Where(bill => bill.DeliveryAddress.Ward.district_id == postOffice.Ward.district_id &&
+                               bill.deliveryType == "home"
+                )
+                .Select(bill => new
+                {
+                    Bill = bill,
+                    LatestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .FirstOrDefault()
+                })
+                .Where(result => result.LatestStatus.StatusType.name == "Delivered to Post Office"
+                )
+                .Select(result => new BillDTO
+                {
+                    id = result.Bill.id,
+                    billNumber = result.Bill.billNumber,
+                    totalCharge = result.Bill.totalCharge,
+                payer = result.Bill.payer,
+                cod = result.Bill.cod,
+                dateCreated = result.Bill.dateCreated,
+                note = result.Bill.note,
+                DeliveryAddressDto = dbContext.DeliveryAddresses
+                    .Where(add => add.id == result.Bill.deliveryAddId)
+                    .Select(add => new DeliveryAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                ShippingAddressDto = dbContext.ShippingAddresses
+                    .Where(add => add.id == result.Bill.shippingAddId)
+                    .Select(add => new ShippingAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                BillDetailsDto = dbContext.BillDetails
+                    .Where(d => d.billId == result.Bill.id)
+                    .Select(d => new BillDetailsDTO()
+                    {
+                        name = d.name,
+                        weight = d.weight,
+                        length = d.length,
+                        width = d.width,
+                        height = d.height,
+                        nature = d.nature
+                    })
+                    .FirstOrDefault(),
+                latestStatus = dbContext.Status
+                    .Where(stt => stt.billId == result.Bill.id)
+                    .OrderByDescending(stt => stt.time)
+                    .Select(stt => new StatusDTO()
+                    {
+                        id = stt.id,
+                        typeId = stt.StatusType.id,
+                        name = stt.StatusType.name,
+                        time = stt.time
+                    })
+                    .FirstOrDefault()
+                })
+            .ToList();
+            return Ok(rcvBills);
+        }
+        
+        //delivery to cnee
+        [HttpGet]
+        [Route("delivery")]
+        [Authorize]
+        public IActionResult DlvToCnee()
+        {
+            var emp = HttpContext.User;
+            var role = emp.Claims.FirstOrDefault(r => r.Type == "Role")?.Value;
+            var poId = int.Parse(emp.Claims.FirstOrDefault(p => p.Type == "PostOffice")?.Value);
+            var username = emp.Claims.FirstOrDefault(i => i.Type == ClaimTypes.Name)?.Value;
+            PostOffice postOffice = dbContext.PostOffices.Include(p => p.Ward).FirstOrDefault(p => p.id == poId);
+            if (postOffice == null)
+            {
+                return NotFound("PostOffice not found.");
+            }
+
+            if (role == "Postman")
+            {
+                List<BillDTO> dlvToCnee = dbContext.Bills
+                    .Select(bill => new
+                    {
+                        Bill = bill,
+                        LatestStatus = dbContext.Status
+                            .Where(stt => stt.billId == bill.id)
+                            .OrderByDescending(stt => stt.time)
+                            .FirstOrDefault()
+                    })
+                    .Where(result => result.LatestStatus.Employee.username == username &&
+                                     result.LatestStatus.StatusType.name == "Delivering to Consignee"
+                    )
+                    .Select(result => new BillDTO
+                {
+                    id = result.Bill.id,
+                    billNumber = result.Bill.billNumber,
+                    totalCharge = result.Bill.totalCharge,
+                payer = result.Bill.payer,
+                cod = result.Bill.cod,
+                dateCreated = result.Bill.dateCreated,
+                note = result.Bill.note,
+                DeliveryAddressDto = dbContext.DeliveryAddresses
+                    .Where(add => add.id == result.Bill.deliveryAddId)
+                    .Select(add => new DeliveryAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                ShippingAddressDto = dbContext.ShippingAddresses
+                    .Where(add => add.id == result.Bill.shippingAddId)
+                    .Select(add => new ShippingAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                BillDetailsDto = dbContext.BillDetails
+                    .Where(d => d.billId == result.Bill.id)
+                    .Select(d => new BillDetailsDTO()
+                    {
+                        name = d.name,
+                        weight = d.weight,
+                        length = d.length,
+                        width = d.width,
+                        height = d.height,
+                        nature = d.nature
+                    })
+                    .FirstOrDefault(),
+                latestStatus = dbContext.Status
+                    .Where(stt => stt.billId == result.Bill.id)
+                    .OrderByDescending(stt => stt.time)
+                    .Select(stt => new StatusDTO()
+                    {
+                        id = stt.id,
+                        typeId = stt.StatusType.id,
+                        name = stt.StatusType.name,
+                        time = stt.time
+                    })
+                    .FirstOrDefault()
+                })
+            .ToList();
+            return Ok(dlvToCnee);
+            }
+            else if (role == "Staff")
+            {
+                List<BillDTO> dlvToCnee = dbContext.Bills
+                    .Where(bill => bill.DeliveryAddress.Ward.district_id == postOffice.Ward.district_id &&
+                                   bill.deliveryType == "post-office"
+                    )
+                    .Select(bill => new
+                    {
+                        Bill = bill,
+                        LatestStatus = dbContext.Status
+                            .Where(stt => stt.billId == bill.id)
+                            .OrderByDescending(stt => stt.time)
+                            .FirstOrDefault()
+                    })
+                    .Where(result => result.LatestStatus.Employee.username == username &&
+                                     result.LatestStatus.StatusType.name == "Delivered to Post Office"
+                    )
+                    .Select(result => new BillDTO
+                {
+                    id = result.Bill.id,
+                    billNumber = result.Bill.billNumber,
+                    totalCharge = result.Bill.totalCharge,
+                payer = result.Bill.payer,
+                cod = result.Bill.cod,
+                dateCreated = result.Bill.dateCreated,
+                note = result.Bill.note,
+                DeliveryAddressDto = dbContext.DeliveryAddresses
+                    .Where(add => add.id == result.Bill.deliveryAddId)
+                    .Select(add => new DeliveryAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                ShippingAddressDto = dbContext.ShippingAddresses
+                    .Where(add => add.id == result.Bill.shippingAddId)
+                    .Select(add => new ShippingAddressDTO()
+                    {
+                        name = add.name,
+                        telephone = add.telephone,
+                        address = add.address,
+                        wardName = add.Ward.ward_name,
+                        districtName = add.Ward.District.district_name,
+                        provinceName = add.Ward.District.Province.province_name
+                    })
+                    .FirstOrDefault(),
+                BillDetailsDto = dbContext.BillDetails
+                    .Where(d => d.billId == result.Bill.id)
+                    .Select(d => new BillDetailsDTO()
+                    {
+                        name = d.name,
+                        weight = d.weight,
+                        length = d.length,
+                        width = d.width,
+                        height = d.height,
+                        nature = d.nature
+                    })
+                    .FirstOrDefault(),
+                latestStatus = dbContext.Status
+                    .Where(stt => stt.billId == result.Bill.id)
+                    .OrderByDescending(stt => stt.time)
+                    .Select(stt => new StatusDTO()
+                    {
+                        id = stt.id,
+                        typeId = stt.StatusType.id,
+                        name = stt.StatusType.name,
+                        time = stt.time
+                    })
+                    .FirstOrDefault()
+                })
+            .ToList();
+            return Ok(dlvToCnee);
+            }
+            else
+            {
+                return BadRequest("Invalid role");
+            }
+        }
+        
     }
     
 }

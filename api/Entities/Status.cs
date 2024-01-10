@@ -10,7 +10,7 @@ public class Status
     [ForeignKey("typeId")]
     public StatusType StatusType { get; set; }
     
-    public int employeeId { get; set; }
+    public int? employeeId { get; set; }
     [ForeignKey("employeeId")]
     public Employee Employee { get; set; }
     

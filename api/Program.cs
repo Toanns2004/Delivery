@@ -27,6 +27,15 @@ builder.Services.AddCors(p => p.AddPolicy("CorsConfig", build =>
         .AllowAnyOrigin();
 }));
 
+//policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireStaffRole", policy =>
+        policy.RequireClaim("Role", "Staff"));
+    options.AddPolicy("RequirePostmanRole", policy =>
+        policy.RequireClaim("Role", "Postman"));
+});
+
 //JWT
 builder.Services.AddAuthentication(auth =>
 {

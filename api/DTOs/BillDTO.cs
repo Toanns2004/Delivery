@@ -10,13 +10,10 @@ public class BillDTO
     
     public int userId { get; set; }
     
-    public int shippingAddId { get; set; }
-    
-    public int deilveryAddId { get; set; }
-    
     public DeliveryAddressDTO DeliveryAddressDto { get; set; }
     
-    public int unitPriceId { get; set; }
+    public ShippingAddressDTO ShippingAddressDto { get; set; }
+    
     
     public double charge { get; set; }
     
@@ -34,19 +31,9 @@ public class BillDTO
     
     public double cod { get; set; }
     
-    public string name { get; set; }
-    
-    public string nature { get; set; }
-    
-    public double weight { get; set; }
-    
-    public int length { get; set; }
-    
-    public int width { get; set; }
-    
-    public int height { get; set; }
-    
-    public double value { get; set; }
-    
+    public BillDetailsDTO BillDetailsDto { get; set; }
+        
     public DateTime dateCreated { get; set; }
+    
+    public StatusDTO latestStatus { get; set; }
 }

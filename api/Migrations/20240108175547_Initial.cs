@@ -125,44 +125,6 @@ namespace api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Bills",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    billNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    userId = table.Column<int>(type: "int", nullable: false),
-                    shippingAddId = table.Column<int>(type: "int", nullable: false),
-                    deilveryAddId = table.Column<int>(type: "int", nullable: false),
-                    unitPriceId = table.Column<int>(type: "int", nullable: false),
-                    charge = table.Column<double>(type: "float", nullable: false),
-                    pickupType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    deliveryType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    insuranceFee = table.Column<double>(type: "float", nullable: false),
-                    totalCharge = table.Column<double>(type: "float", nullable: false),
-                    payer = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    note = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    cod = table.Column<double>(type: "float", nullable: false),
-                    dateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Bills", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_Bills_UnitPrices_unitPriceId",
-                        column: x => x.unitPriceId,
-                        principalTable: "UnitPrices",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Bills_Users_userId",
-                        column: x => x.userId,
-                        principalTable: "Users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Wards",
                 columns: table => new
                 {
@@ -178,32 +140,6 @@ namespace api.Migrations
                         name: "FK_Wards_Districts_district_id",
                         column: x => x.district_id,
                         principalTable: "Districts",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BillDetails",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    billId = table.Column<int>(type: "int", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    nature = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    weight = table.Column<double>(type: "float", nullable: false),
-                    length = table.Column<int>(type: "int", nullable: false),
-                    width = table.Column<int>(type: "int", nullable: false),
-                    height = table.Column<int>(type: "int", nullable: false),
-                    value = table.Column<double>(type: "float", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BillDetails", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_BillDetails_Bills_billId",
-                        column: x => x.billId,
-                        principalTable: "Bills",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -248,7 +184,7 @@ namespace api.Migrations
                     postName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     latitude = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    longtitude = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    longitude = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -321,13 +257,89 @@ namespace api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Bills",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    billNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    userId = table.Column<int>(type: "int", nullable: false),
+                    shippingAddId = table.Column<int>(type: "int", nullable: false),
+                    deliveryAddId = table.Column<int>(type: "int", nullable: false),
+                    unitPriceId = table.Column<int>(type: "int", nullable: false),
+                    charge = table.Column<double>(type: "float", nullable: false),
+                    pickupType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    deliveryType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    insuranceFee = table.Column<double>(type: "float", nullable: false),
+                    totalCharge = table.Column<double>(type: "float", nullable: false),
+                    payer = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    cod = table.Column<double>(type: "float", nullable: false),
+                    dateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bills", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Bills_DeliveryAddresses_deliveryAddId",
+                        column: x => x.deliveryAddId,
+                        principalTable: "DeliveryAddresses",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bills_ShippingAddresses_shippingAddId",
+                        column: x => x.shippingAddId,
+                        principalTable: "ShippingAddresses",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bills_UnitPrices_unitPriceId",
+                        column: x => x.unitPriceId,
+                        principalTable: "UnitPrices",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Bills_Users_userId",
+                        column: x => x.userId,
+                        principalTable: "Users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BillDetails",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    billId = table.Column<int>(type: "int", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    nature = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    weight = table.Column<double>(type: "float", nullable: false),
+                    length = table.Column<int>(type: "int", nullable: false),
+                    width = table.Column<int>(type: "int", nullable: false),
+                    height = table.Column<int>(type: "int", nullable: false),
+                    value = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BillDetails", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_BillDetails_Bills_billId",
+                        column: x => x.billId,
+                        principalTable: "Bills",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Status",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     typeId = table.Column<int>(type: "int", nullable: false),
-                    employeeId = table.Column<int>(type: "int", nullable: false),
+                    employeeId = table.Column<int>(type: "int", nullable: true),
                     billId = table.Column<int>(type: "int", nullable: false),
                     time = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -358,6 +370,16 @@ namespace api.Migrations
                 name: "IX_BillDetails_billId",
                 table: "BillDetails",
                 column: "billId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bills_deliveryAddId",
+                table: "Bills",
+                column: "deliveryAddId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bills_shippingAddId",
+                table: "Bills",
+                column: "shippingAddId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bills_unitPriceId",
@@ -442,13 +464,7 @@ namespace api.Migrations
                 name: "BillDetails");
 
             migrationBuilder.DropTable(
-                name: "DeliveryAddresses");
-
-            migrationBuilder.DropTable(
                 name: "Permissions");
-
-            migrationBuilder.DropTable(
-                name: "ShippingAddresses");
 
             migrationBuilder.DropTable(
                 name: "Status");
@@ -463,16 +479,22 @@ namespace api.Migrations
                 name: "StatusTypes");
 
             migrationBuilder.DropTable(
-                name: "UnitPrices");
+                name: "DeliveryAddresses");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "ShippingAddresses");
+
+            migrationBuilder.DropTable(
+                name: "UnitPrices");
 
             migrationBuilder.DropTable(
                 name: "PostOffices");
 
             migrationBuilder.DropTable(
                 name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Wards");

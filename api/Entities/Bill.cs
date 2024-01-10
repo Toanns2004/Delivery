@@ -13,8 +13,12 @@ public class Bill
     public User User { get; set; }
     
     public int shippingAddId { get; set; }
+    [ForeignKey("shippingAddId")]
+    public ShippingAddress ShippingAddress { get; set; }
     
-    public int deilveryAddId { get; set; }
+    public int deliveryAddId { get; set; }
+    [ForeignKey("deliveryAddId")]
+    public DeliveryAddress DeliveryAddress { get; set; }
     
     public int unitPriceId { get; set; }
     [ForeignKey("unitPriceId")]

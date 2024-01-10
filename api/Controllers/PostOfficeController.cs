@@ -27,7 +27,10 @@ namespace api.Controllers
                     postName = po.postName,
                     address = po.address,
                     latitude = po.latitude,
-                    longtitude = po.longtitude
+                    longitude = po.longitude,
+                    wardName = po.Ward.ward_name,
+                    districtName = po.Ward.District.district_name,
+                    provinceName = po.Ward.District.Province.province_name
                 })
                 .ToList();
             return Ok(postoffices);
@@ -48,7 +51,10 @@ namespace api.Controllers
                     postName = po.postName,
                     address = po.address,
                     latitude = po.latitude,
-                    longtitude = po.longtitude
+                    longitude = po.longitude,
+                    wardName = po.Ward.ward_name,
+                    districtName = po.Ward.District.district_name,
+                    provinceName = po.Ward.District.Province.province_name
                 })
                 .ToList();
             return Ok(postoffices);
