@@ -255,23 +255,9 @@ namespace api.Controllers
                     {
                         range = "out-province";
                     }
-
-                    string weightLimit = string.Empty;
-                    if (newBillModel.weight <= 3000)
-                    {
-                        weightLimit = "up to 3000";
-                    }
-                    else if (newBillModel.weight <= 10000)
-                    {
-                        weightLimit = "up to 10000";
-                    }
-                    else
-                    {
-                        weightLimit = "exceed 10000";
-                    }
-
+                    
                     UnitPrice newUnitPrice = dbContext.UnitPrices
-                        .Where(price => price.range == range && price.weightLimit == weightLimit)
+                        .Where(price => price.range == range && price.minWeight <= newBillModel.weight && price.maxWeight > newBillModel.weight)
                         .FirstOrDefault();
                     if (newUnitPrice == null)
                     {
@@ -589,7 +575,8 @@ namespace api.Controllers
                         .OrderByDescending(stt => stt.time)
                         .Select(stt => new StatusDTO()
                         {
-                            id = stt.StatusType.id,
+                            id = stt.id,
+                            typeId = stt.StatusType.id,
                             name = stt.StatusType.name
                         })
                         .FirstOrDefault()

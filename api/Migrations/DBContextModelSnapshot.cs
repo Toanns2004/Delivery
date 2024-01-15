@@ -426,11 +426,13 @@ namespace api.Migrations
                     b.Property<double>("chargeRate")
                         .HasColumnType("float");
 
-                    b.Property<string>("range")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("maxWeight")
+                        .HasColumnType("int");
 
-                    b.Property<string>("weightLimit")
+                    b.Property<int>("minWeight")
+                        .HasColumnType("int");
+
+                    b.Property<string>("range")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

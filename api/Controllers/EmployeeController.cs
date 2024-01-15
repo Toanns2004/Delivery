@@ -5,6 +5,7 @@ using api.Context;
 using api.DTOs;
 using api.Entities;
 using api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -263,6 +264,43 @@ namespace api.Controllers
             }
 
             return Unauthorized();
+        }
+        
+        //change password
+        [HttpPost]
+        [Route("changepassword")]
+        [Authorize]
+        public IActionResult ChangePassword(ChangePwdModel changePwdModel)
+        {
+            var emp = HttpContext.User;
+            var username = emp.Claims.FirstOrDefault(u => u.Type == ClaimTypes.Name)?.Value;
+
+            Employee updateEmp = dbContext.Employees.SingleOrDefault(e => e.username == username);
+
+            if (updateEmp != null)
+            {
+                bool passwordMatch = BCrypt.Net.BCrypt.Verify(changePwdModel.currentPassword, updateEmp.password);
+
+                if (passwordMatch)
+                {
+                    updateEmp.password = BCrypt.Net.BCrypt.HashPassword(changePwdModel.newPassword);
+                    dbContext.SaveChanges();
+                    return Ok( new
+                        {
+                            Message = "Password change",
+                            username = username
+                        }
+                    );
+                }
+                else
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
     }
 }

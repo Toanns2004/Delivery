@@ -6,7 +6,9 @@ public class UnitPrice
     
     public string range { get; set; }
     
-    public string weightLimit { get; set; }
+    public int minWeight { get; set; }
+    
+    public int maxWeight { get; set; }
     
     public double chargeRate { get; set; }
 }

@@ -9,7 +9,6 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("/status")]
-    [Authorize]
     public class StatusController : Controller
     {
         private readonly DBContext dbContext;
@@ -21,6 +20,7 @@ namespace api.Controllers
 
         [HttpPost]
         [Route("create")]
+        [Authorize]
         public IActionResult Create(StatusModel newStatusModel)
         {
             if (ModelState.IsValid)
@@ -67,6 +67,27 @@ namespace api.Controllers
             }
 
             return BadRequest("Create new status error.");
+        }
+        
+        //get shipment status
+        [HttpGet]
+        [Route("shipment/{bn}")]
+        public IActionResult StatusByShipment(string bn)
+        {
+            var id = dbContext.Bills
+                .FirstOrDefault(b => b.billNumber == bn)
+                .id;
+            List<StatusDTO> status = dbContext.Status
+                .Where(stt => stt.billId == id)
+                .OrderBy(stt => stt.time)
+                .Select(stt => new StatusDTO()
+                {
+                    id = stt.id,
+                    time = stt.time,
+                    name = stt.StatusType.name
+                })
+                .ToList();
+            return Ok(status);
         }
     }
 }

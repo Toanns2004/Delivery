@@ -12,7 +12,7 @@ using api.Context;
 namespace api.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20240108175547_Initial")]
+    [Migration("20240112175428_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -429,11 +429,13 @@ namespace api.Migrations
                     b.Property<double>("chargeRate")
                         .HasColumnType("float");
 
-                    b.Property<string>("range")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("maxWeight")
+                        .HasColumnType("int");
 
-                    b.Property<string>("weightLimit")
+                    b.Property<int>("minWeight")
+                        .HasColumnType("int");
+
+                    b.Property<string>("range")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
