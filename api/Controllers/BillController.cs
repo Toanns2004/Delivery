@@ -71,10 +71,18 @@ namespace api.Controllers
         //get bills by user
         [HttpGet]
         [Route("user/{userId}")]
-        public IActionResult BillByUser(int userId)
+        public IActionResult BillByUser(int userId, [FromQuery] string startDate, [FromQuery] string endDate)
         {
+            if (!DateTime.TryParse(startDate, out DateTime startDateTime) || !DateTime.TryParse(endDate, out DateTime endDateTime))
+            {
+                return BadRequest("Invalid date format");
+            }
+            
             List<BillDTO> bills = dbContext.Bills
-                .Where(bill => bill.userId == userId)
+                .Where(bill => bill.userId == userId &&
+                               bill.dateCreated >= startDateTime &&
+                               bill.dateCreated <= endDateTime.Date.AddDays(1)
+                )
                 .Select(bill => new BillDTO()
                 {
                     id = bill.id,
@@ -412,6 +420,74 @@ namespace api.Controllers
                             id = stt.id,
                             typeId = stt.StatusType.id,
                             name = stt.StatusType.name
+                        })
+                        .FirstOrDefault()
+                })
+                .FirstOrDefault();
+            return Ok(billDetails);
+        }
+        
+        //get bill detail by bill id
+        [HttpGet]
+        [Route("detail/id/{bi}")]
+        public IActionResult BillDetails(int bi)
+        {
+            BillDTO billDetails = dbContext.Bills
+                .Where(bill => bill.id == bi)
+                .Select(bill => new BillDTO()
+                {
+                    id = bill.id,
+                    billNumber = bill.billNumber,
+                    totalCharge = bill.totalCharge,
+                    payer = bill.payer,
+                    cod = bill.cod,
+                    dateCreated = bill.dateCreated,
+                    note = bill.note,
+                    DeliveryAddressDto = dbContext.DeliveryAddresses
+                        .Where(add => add.id == bill.deliveryAddId)
+                        .Select(add => new DeliveryAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    ShippingAddressDto = dbContext.ShippingAddresses
+                        .Where(add => add.id == bill.shippingAddId)
+                        .Select(add => new ShippingAddressDTO()
+                        {
+                            name = add.name,
+                            telephone = add.telephone,
+                            address = add.address,
+                            wardName = add.Ward.ward_name,
+                            districtName = add.Ward.District.district_name,
+                            provinceName = add.Ward.District.Province.province_name
+                        })
+                        .FirstOrDefault(),
+                    BillDetailsDto = dbContext.BillDetails
+                        .Where(d => d.billId == bill.id)
+                        .Select(d => new BillDetailsDTO()
+                        {
+                            name = d.name,
+                            weight = d.weight,
+                            length = d.length,
+                            width = d.width,
+                            height = d.height,
+                            nature = d.nature
+                        })
+                        .FirstOrDefault(),
+                    latestStatus = dbContext.Status
+                        .Where(stt => stt.billId == bill.id)
+                        .OrderByDescending(stt => stt.time)
+                        .Select(stt => new StatusDTO()
+                        {
+                            id = stt.id,
+                            typeId = stt.StatusType.id,
+                            name = stt.StatusType.name,
+                            time = stt.time
                         })
                         .FirstOrDefault()
                 })

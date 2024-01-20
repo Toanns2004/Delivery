@@ -6,7 +6,8 @@ public class DeliveryAdressModel
 {
     public int id { get; set; }
     
-    [Required(ErrorMessage = "Shipper name is required.")]
+    [Required(ErrorMessage = "Consignee name is required.")]
+    [MinLength(6, ErrorMessage = "Name must be at least 6 characters.")]
     public string name { get; set; }
     
     [Required(ErrorMessage = "Telephone number is required.")]
@@ -16,6 +17,7 @@ public class DeliveryAdressModel
     public int userId { get; set; }
     
     [Required(ErrorMessage = "Address is required.")]
+    [MinLength(10, ErrorMessage = "Address must be at least 10 characters.")]
     public string address { get; set; }
     
     [Required(ErrorMessage = "Ward ID is required.")]
