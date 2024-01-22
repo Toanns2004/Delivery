@@ -94,7 +94,7 @@ namespace api.Controllers
                     
                     Status newStatus = new Status()
                     {
-                        typeId = statusType.id,
+                        typeId = 8,
                         billId = bill.id,
                         time = DateTime.Now
                     };

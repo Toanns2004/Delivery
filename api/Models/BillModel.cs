@@ -22,7 +22,7 @@ public class BillModel
     [Required(ErrorMessage = "Payer is required.")]
     public string payer { get; set; }
     
-    [MinLength(10, ErrorMessage = "Note must be at least 10 characters")]
+    // [MinLength(10, ErrorMessage = "Note must be at least 10 characters")]
     public string note { get; set; }
     
     public double cod { get; set; }
