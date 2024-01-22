@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Text;
 using api.Context;
@@ -31,6 +32,11 @@ namespace api.Controllers
             {
                 try
                 {
+                    if (dbContext.Users.Any(user => user.email == regModel.email))
+                    {
+                        return Unauthorized("Email is already exist. Please enter another email.");
+                    }
+                    
                     string salt = BCrypt.Net.BCrypt.GenerateSalt(10);
                     string hashedPassword = BCrypt.Net.BCrypt.HashPassword(regModel.password, salt);
 

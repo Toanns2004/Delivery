@@ -126,6 +126,11 @@ namespace api.Controllers
             {
                 try
                 {
+                    if (dbcontext.DeliveryAddresses.Any(add => add.telephone == newAddModel.telephone))
+                    {
+                        return BadRequest("Telephone number is already exist.");
+                    }
+                    
                     DeliveryAddress newDeliveryAddress = new DeliveryAddress()
                     {
                         name = newAddModel.name,

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using api.Context;
 using api.DTOs;
 using api.Entities;
@@ -151,6 +152,108 @@ namespace api.Controllers
                     collectFromCnee = Math.Round(bill.Bill.payer != "shipper" ? (bill.Bill.totalCharge + bill.Bill.cod) : bill.Bill.cod, 2)
                 })
                 .ToList();
+            return Ok(reports);
+        }
+        
+        //bill by status
+        [HttpGet]
+        [Route("user")]
+        [Authorize]
+        public IActionResult UserReport([FromQuery] string startDate, [FromQuery] string endDate)
+        {
+            var user = HttpContext.User;
+
+            var userId = int.Parse(user.Claims.FirstOrDefault(u => u.Type == ClaimTypes.NameIdentifier)?.Value);
+
+            if (userId == null)
+            {
+                return NotFound("User not found.");
+            }
+            
+            if (!DateTime.TryParse(startDate, out DateTime startDateTime) || !DateTime.TryParse(endDate, out DateTime endDateTime))
+            {
+                return BadRequest("Invalid date format");
+            }
+
+            List<Status> status = dbContext.Status
+                .Where(stt => stt.Bill.userId == userId && stt.Bill.dateCreated >= startDateTime && stt.Bill.dateCreated < endDateTime.Date.AddDays(1))
+                .GroupBy(stt => stt.Bill.id)
+                .Select(stt => stt.OrderByDescending(t => t.time).FirstOrDefault())
+                .ToList();
+
+            var reportByType = status
+                .GroupBy(stt => stt.typeId)
+                .Select(rs => new
+                {
+                    StatusType = rs.Key,
+                    Total = rs.Count(),
+                    Status = status.Where(stt => stt.typeId == rs.Key)
+                })
+                .ToList();
+
+            var reportByStt = reportByType
+                .SelectMany(rs => rs.Status)
+                .SelectMany(stt => dbContext.Status.Where(status => status.id == stt.id))
+                .ToList();
+
+            var reportBill = reportByStt
+                .Select(rp => new
+                {
+                    typeId = rp.typeId,
+                    status = dbContext.StatusTypes.Where(type => type.id == rp.typeId).FirstOrDefault().name,
+                    cod = dbContext.Bills.Where(b => b.id == rp.billId).FirstOrDefault().cod,
+                    payer = dbContext.Bills.Where(b => b.id == rp.billId).FirstOrDefault().payer,
+                    chagre = dbContext.Bills.Where(b => b.id == rp.billId).FirstOrDefault().totalCharge
+                })
+                .ToList();
+            var totalBillsByStatus = reportBill
+                .GroupBy(rp => rp.typeId)
+                .Select(group => new
+                {
+                    StatusType = group.Key,
+                    StatusName = group.FirstOrDefault()?.status,
+                    TotalBills = group.Count(),
+                    TotalCod = group.Sum(rp => rp.cod),
+                    TotalCharge = Math.Round(group.Sum(rp => rp.payer == "shipper" ? rp.chagre : 0), 2)
+                })
+                .ToList();
+            List < UserReportDTO > reports = totalBillsByStatus
+                .Select(rp => new UserReportDTO()
+                {
+                    status = rp.StatusName,
+                    totalBills = rp.TotalBills,
+                    totalCod = rp.TotalCod,
+                    totalCharge = rp.TotalCharge
+                })
+                .ToList();
+
+            // List < UserReportDTO > reports = dbContext.Bills
+            //     .Where(bill => bill.dateCreated >= startDateTime && bill.dateCreated < endDateTime.Date.AddDays(1) && bill.userId == userId)
+            //     .Join(
+            //         dbContext.Status,
+            //         bill => bill.id,
+            //         status => status.billId,
+            //         (bill, status) => new { Bill = bill, Status = status }
+            //     )
+            //     .Select(bill => new
+            //     {
+            //         Bill = bill,
+            //         LatestStatus = dbContext.Status
+            //         .Where(stt => stt.billId == bill.Bill.id)
+            //         .OrderByDescending(stt => stt.time)
+            //         .FirstOrDefault()
+            //     })
+            //     .GroupBy(rs => rs.Bill.Status.StatusType)
+            //     .OrderBy(group => group.Key.id)
+            //     .Select(rs => new UserReportDTO()
+            //     {
+            //         status = rs.Key.name,
+            //         totalBills = rs.Count(),
+            //         totalCod = rs.Sum(i => i.Bill.Bill.cod),
+            //         totalCharge = Math.Round(rs.Sum(i => i.Bill.Bill.payer == "shipper" ? i.Bill.Bill.totalCharge : 0), 2),
+            //     })
+            //     .ToList();
+            
             return Ok(reports);
         }
     }

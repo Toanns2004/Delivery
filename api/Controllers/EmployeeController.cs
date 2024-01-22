@@ -114,6 +114,11 @@ namespace api.Controllers
             {
                 try
                 {
+                    if (dbContext.Employees.Any(emp => emp.username == newEmployeeModel.username))
+                    {
+                        return BadRequest("Username is already exist.");
+                    }
+                    
                     string hashedPwd = BCrypt.Net.BCrypt.HashPassword(newEmployeeModel.password);
 
                     Employee newEmployee = new Employee()
