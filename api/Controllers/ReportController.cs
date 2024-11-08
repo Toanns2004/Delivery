@@ -13,7 +13,7 @@ namespace api.Controllers
     public class ReportController: Controller
     {
         private readonly DBContext dbContext;
-
+         
         public ReportController(DBContext context)
         {
             dbContext = context;

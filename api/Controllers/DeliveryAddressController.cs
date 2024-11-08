@@ -13,7 +13,7 @@ namespace api.Controllers
     public class DeliveryAddressController: Controller
     {
         private readonly DBContext dbcontext;
-
+         
         public DeliveryAddressController(DBContext context)
         {
             dbcontext = context;

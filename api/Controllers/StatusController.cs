@@ -12,7 +12,7 @@ namespace api.Controllers
     public class StatusController : Controller
     {
         private readonly DBContext dbContext;
-
+         
         public StatusController(DBContext context)
         {
             dbContext = context;

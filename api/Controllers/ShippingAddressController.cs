@@ -12,7 +12,7 @@ namespace api.Controllers
     [Authorize]
     [Route("/client/shippingadd")]
     public class ShippingAddressController: ControllerBase
-    {
+    { 
         private readonly DBContext dbcontext;
 
         public ShippingAddressController(DBContext context)

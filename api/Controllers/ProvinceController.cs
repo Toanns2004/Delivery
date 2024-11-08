@@ -10,7 +10,7 @@ namespace api.Controllers
     {
         private readonly DBContext dbContext;
         private readonly IConfiguration configuration;
-
+         
         public ProvinceController(DBContext context, IConfiguration config)
         {
             dbContext = context;

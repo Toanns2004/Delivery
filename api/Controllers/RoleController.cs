@@ -11,7 +11,7 @@ namespace api.Controllers
     public class RoleController : Controller
     {
         private readonly DBContext dbContext;
-
+         
         public RoleController(DBContext context)
         {
             dbContext = context;

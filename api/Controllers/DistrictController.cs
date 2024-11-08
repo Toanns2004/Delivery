@@ -11,7 +11,7 @@ namespace api.Controllers
     {
         private readonly DBContext dbContext;
         private readonly IConfiguration configuration;
-
+         
         public DistrictController(DBContext context, IConfiguration config)
         {
             dbContext = context;

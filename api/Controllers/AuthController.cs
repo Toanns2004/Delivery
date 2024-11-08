@@ -14,7 +14,7 @@ namespace api.Controllers
     [ApiController]
     [Route("/auth")]
     public class AuthController : Controller
-    {
+    { 
         private readonly DBContext dbContext;
         private IConfiguration configuration;
 

@@ -11,7 +11,7 @@ namespace api.Controllers
     public class WardController: Controller
     {
         private readonly DBContext dbContext;
-
+         
         public WardController(DBContext context)
         {
             dbContext = context;
